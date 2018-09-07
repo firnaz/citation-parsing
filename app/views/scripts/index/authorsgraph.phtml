@@ -1,0 +1,501 @@
+{include file="header.phtml"}
+<div id="content">
+  <div class="row-fluid header_bar">
+    <div class="container some_padding">
+      <div class="header" id="header">
+        <a id="header_logo" href="{$_URL}" alt="{$_TITLE}"><h4>{$_TITLE}</h4></a>
+        <div class="header_search_tabs">
+          <div class="clear"></div>
+        </div>
+        <div class="header_search ac_header">
+          <form class="header_search_inner" id="search_form">
+            <a href="#" id="header_search_submit"><span data-icon="w" aria-hidden="true" class="search_icon"></span></a>
+            <div class="header_search_input_wrapper">
+              <input type="text" placeholder="Kata pencarian" value="{$page.query}" id="search_input">
+              <input type="hidden" id="searchFlagInput">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="static-page">
+    <div class="title">Grafik Penulisan Bersama dari {$page.author.NamaPengarang}</div>
+    <div id="headerGraph"></div>
+    <div id="leftSideBarGraph">
+      <p><a href="pengarang?id={$page.author.ID}">Detail Informasi Penulis</a></p>
+      <p>Daftar Publikasi</p>
+      <ul>
+        {foreach from=$page.documents item=item}
+        <li><a href="dokumen?id={$item.ID}">{$item.judul|truncate:80} ({$item.tahun})</a></li>
+        {/foreach}
+      </ul>
+    </div>
+    <div id="rightSideBarGraph"></div>
+    <div id="graph">
+      <div id="Masking">
+      <div id="MaskingGraph"><div>Loading...</div></div>
+      </div>
+      <div id="authorsgraph"></div>
+      <div id="footerGraph">
+        <div id="legend">
+          <ul>
+            <li id="author-legend"><div class="author-legend">&nbsp;</div> {$page.author.NamaPengarang}</li>
+            <li><div class="co-author-legend">&nbsp;</div> Penulis yang menulis di publikasi yang sama</li>
+          </ul>
+        </div>
+        <!-- div id="DownloadGraph"><a href="#">Download</a></div -->
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  var edgeclick=null;
+  var json = [
+    {ldelim}
+      {if $page.authordumps}        
+        adjacencies:[
+          {foreach from=$page.authordumps item=item}
+            {ldelim}
+              "nodeTo": "node{$item.ID}",
+              "data": {ldelim}
+                  "$color": defaultlinecolor
+              {rdelim}
+            {rdelim},
+          {/foreach}
+        ],
+      {else}
+      adjacencies:[],
+      {/if}  
+      "data": {ldelim}
+          tipe:0,
+          "$color": "#69C7EC",  
+          "$type": "square",  
+          "$dim": 10,
+          "$label-size":14,
+          "$label-color":"#ac2424",          
+      {rdelim},  
+      "id": "node{$page.author.ID}",  
+      "name": "{$page.author.NamaPengarang}" 
+    {rdelim}
+    {if $page.authordumps}
+      {foreach from=$page.authordumps item=item}
+        ,{ldelim}
+          adjacencies:[
+          {foreach from=$item.children item=item2}
+            {ldelim}
+              "tipe" : "{$item2.type}",
+              "nodeTo": "node{$item2.ID}",
+              "data": {ldelim}
+                  "$color": defaultlinecolor
+              {rdelim},
+              "type": "arrow"
+            {rdelim},
+          {/foreach}
+          ],
+          "data": {ldelim}
+            "$color": "#C34918",
+            "$type": "square",  
+            "$dim": 8,  
+            "tipe" : "{$item.type}",
+            "type": "arrow"
+          {rdelim},
+          "id": "node{$item.ID}",  
+          "name": "{$item.NamaPengarang}",
+        {rdelim}
+      {/foreach}
+    {/if}
+    {if $page.noChildrenNodes}
+      {foreach from=$page.noChildrenNodes item=item}
+        ,{ldelim}
+          adjacencies:[],
+          "data": {ldelim}
+            "$color": "#C34918",
+            "$type": "square",  
+            "$dim": 8,  
+            "tipe" : "{$item.type}" 
+          {rdelim},
+          "id": "node{$item.ID}",  
+          "name": "{$item.NamaPengarang}",
+        {rdelim}
+      {/foreach}
+    {/if}
+  ]
+  var root = "node{$page.author.ID}";
+  {literal}
+  var fd = new $jit.ForceDirected({  
+    //id of the visualization container  
+    injectInto: 'authorsgraph',
+    //Enable zooming and panning  
+    //by scrolling and DnD  
+    Navigation: {  
+      enable: true,  
+      //Enable panning events only if we're dragging the empty  
+      //canvas (and not a node).  
+      panning: 'avoid nodes',  
+      zooming: 20 //zoom speed. higher is more sensible  
+    },  
+    // Change node and edge styles such as  
+    // color and width.  
+    // These properties are also set per node  
+    // with dollar prefixed data-properties in the  
+    // JSON structure.  
+    Node: {  
+      overridable: true  
+    },  
+    Edge: {  
+      overridable: true,  
+      color: defaultlinecolor,  
+      lineWidth: 2,
+      CanvasStyles: {  
+      }  
+    },  
+    //Native canvas text styling  
+    Label: {  
+      type: 'Native', //Native or HTML  
+      size: 10,  
+      style: 'bold',
+      color: '#000' 
+    },  
+    //Add Tips  
+    Tips: {  
+      enable: true,  
+      // onShow: function(tip, node) {  
+      //   //count connections  
+      //   var count = 0;  
+      //   //display node info in tooltip  
+      //   tip.innerHTML = "<div class=\"tip-title\">" + node.name + "</div>"; 
+      // }
+    },  
+    // Add node events  
+    Events: {  
+      enable: true,  
+      type: 'Native',
+      enableForEdges: true,
+      //Change cursor style when hovering a node  
+      onMouseEnter: function(node, eventInfo, e) {
+        console.log(node);
+        // if(node.id!=root){
+          fd.canvas.getElement().style.cursor = 'pointer';
+        // }
+        if(node && node.id){
+          node.eachAdjacency(function(adj) { 
+            if(edgeclick == null || ((edgeclick.from.id!=adj.nodeFrom.id || edgeclick.to.id!=adj.nodeTo.id) && (edgeclick.to.id!=adj.nodeFrom.id || edgeclick.from.id!=adj.nodeTo.id))){
+              adj.setDataset('end', {
+                color : defaultlinecolor,
+                lineWidth: 3
+              });
+            }
+            if(adj.nodeTo.data.tipe!=0){
+              adj.nodeTo.setLabelData('size', 12, 'end');
+            }
+          });
+          fd.fx.animate({
+            modes: ['edge-property:lineWidth','label-property:size'],
+            duration: 0
+          });      
+        }
+      },  
+      onMouseLeave: function(node, eventInfo, e) {
+        fd.canvas.getElement().style.cursor = '';
+        $.each(fd.graph.nodes,function(index,item){
+          item.eachAdjacency(function(adj) {
+            if(edgeclick == null || ((edgeclick.from.id!=adj.nodeFrom.id || edgeclick.to.id!=adj.nodeTo.id) && (edgeclick.to.id!=adj.nodeFrom.id || edgeclick.from.id!=adj.nodeTo.id))){
+              adj.setDataset('end', {
+                color:defaultlinecolor,
+                lineWidth: 2
+              });
+            }
+            if(adj.nodeTo.data.tipe!=0){
+              adj.nodeTo.setLabelData('size', 10, 'end');
+            }
+          });
+        });  
+        fd.fx.animate({
+          modes: ['edge-property:lineWidth:color','label-property:size'],
+          duration: 0
+        });
+      },  
+      //Update node positions when dragged  
+      onDragMove: function(node, eventInfo, e) {  
+          var pos = eventInfo.getPos();
+          if(node && node.pos){
+            node.pos.setc(pos.x, pos.y);  
+            fd.plot();  
+          }
+      },  
+      //Implement the same handler for touchscreens  
+      onTouchMove: function(node, eventInfo, e) {  
+        $jit.util.event.stop(e); //stop default touchmove event  
+        this.onDragMove(node, eventInfo, e);  
+      },  
+      //Add also a click handler to nodes  
+      onClick: function(node) {  
+        if(!node) return;
+        // if(node.id==fd.root) return;
+        if(node.id){
+          edgeclick=null;
+        }else{
+          edgeclick={from:node.nodeFrom, to: node.nodeTo};
+          var edge = node;
+          $.each(fd.graph.nodes,function(index,item){
+            item.eachAdjacency(function(adj) { 
+              adj.setDataset('end', {
+                lineWidth: 2,
+                color:defaultlinecolor
+              });
+            });
+          });
+          edge.setDataset('end', {
+            lineWidth: 3,
+            color:"#FD9827"
+          });
+          fd.fx.animate({
+            modes: ['edge-property:lineWidth:color','label-property:size'],
+            duration: 0
+          });      
+        }
+        if(edgeclick==null && node.id!=fd.root){
+          $("#MaskingGraph").show();
+          $("#leftSideBarGraph").html("");
+          $("#static-page .title").html("&nbsp;");
+          $.get("authorsgraph/ajax",{id:node.id.replace("node","")},
+            function(data,status,xhr){
+              root = "node"+data.author.ID;
+              json =[];
+              var author={
+                adjacencies:[],
+                "data": {  
+                    "$color": "#69C7EC",  
+                    "$type": "square",  
+                    "$dim": 10,
+                    "$label-size":14,
+                    "$label-color":"#ac2424",          
+                    tipe:0
+                },
+                "id": "node"+data.author.ID,  
+                "name": data.author.NamaPengarang 
+              };
+              var authordumps={};
+              var color;
+              $.each(data.authordumps,function(index,item){
+                color =  "#C34918";
+                authordumps={
+                  adjacencies:[],
+                  "data": {  
+                      "$color": color,  
+                      "$type": "square",  
+                      "$dim": 8,
+                      "tipe" : item.type 
+                  },
+                  "id": "node"+item.ID,  
+                  "name": item.NamaPengarang,
+                  tipe:0,
+                };
+                $.each(item.children, function(i,it){
+                  authordumps.adjacencies.push(
+                    {
+                      nodeTo: "node"+it.ID,
+                      data:{
+                        $color:defaultlinecolor
+                      }
+                    }
+                  );
+                });
+                json.push(authordumps);
+                author.adjacencies.push(
+                  {
+                      nodeTo: "node"+item.ID,
+                      data:{
+                        $color:defaultlinecolor
+                      }
+                  }
+                );
+              });
+              author.data.$color="#69C7EC";  
+              json.push(author);
+              var noChildrenNodes={};
+              $.each(data.noChildrenNodes,function(index,item){
+                if (item.type=="1"){
+                  color =  "#C34918";
+                }else if (item.type=="2"){
+                  color= "#3DC318";
+                }else if (item.type=="3"){
+                  color= "#EED477";
+                }  
+                noChildrenNodes={
+                  adjacencies:[],
+                  data:{
+                    $color:color,
+                    "$type": "square",  
+                    "$dim": 8,  
+                    "tipe" : item.type 
+                  },
+                "id": "node"+item.ID,  
+                "name": item.NamaPengarang
+                }
+                json.push(noChildrenNodes);
+              });
+              fd.loadJSON(json);
+              // compute positions incrementally and animate.  
+              fd.root=root;
+              fd.canvas.translate(-1*fd.canvas.translateOffsetX,-1*fd.canvas.translateOffsetY);
+              fd.canvas.scale(1/fd.canvas.scaleOffsetX,1/fd.canvas.scaleOffsetY);
+              fd.computeIncremental({  
+                iter: 40,  
+                property: 'end',  
+                onComplete: function(){
+                  fd.animate({
+                    modes: ['linear'],
+                    transition: $jit.Trans.Quart.easeIn,
+                    duration: 500,
+                    clearCanvas: true,
+                    onComplete:function(){
+                      var str = '<p><a href="pengarang?id='+data.author.ID+'">Detail Informasi Pengarang</a></p><p>Daftar Publikasi</p><ul>';
+                      $.each(data.documents,function(index,item){
+                        str = str+"<li><a href='dokumen?id="+item.ID+"'>"+item.judul.trunc(80,true)+" ("+item.tahun+")</a></li>"
+                      });
+                      str = str+'</ul>';
+                      $("#leftSideBarGraph").html(str);
+                      $("#static-page .title").html("Grafik Penulis dari "+data.author.NamaPengarang);
+                      $("#author-legend").html('<div class="author-legend">&nbsp;</div>'+ data.author.NamaPengarang);
+                      $("#MaskingGraph").hide();
+                    }
+                  });  
+                  setTimeout(function(){
+                    if($("#MaskingGraph").css("display")!="none"){
+                      var str = '<p><a href="pengarang?id='+data.author.ID+'">Detail Informasi Penulis</a></p><p>Daftar Publikasi</p><ul>';
+                      $.each(data.documents,function(index,item){
+                        str = str+"<li><a href='dokumen?id="+item.ID+"'>"+item.judul.trunc(80,true)+" ("+item.tahun+")</a></li>";
+                      });
+                      str = str+'</ul>';
+                      $("#leftSideBarGraph").html(str);
+                      $("#static-page .title").html("Grafik Penulis dari "+data.author.NamaPengarang);
+                      $("#author-legend").html('<div class="author-legend">&nbsp;</div>'+ data.author.NamaPengarang);
+                      fd.refresh();
+                      $("#MaskingGraph").hide();
+                    }
+                  },1000);
+                }
+              });
+            }
+          );
+        }else if(edgeclick==null && node.id==fd.root){
+          $.each(fd.graph.nodes,function(index,item){
+            item.eachAdjacency(function(adj) {
+              adj.setDataset('end', {
+                color:defaultlinecolor,
+                lineWidth: 2
+              });
+              if(adj.nodeTo.data.tipe!=0){
+                adj.nodeTo.setLabelData('size', 10, 'end');
+              }
+            });
+          });  
+          fd.fx.animate({
+            modes: ['edge-property:lineWidth:color','label-property:size'],
+            duration: 0
+          });
+          var url = "authorsgraph/docs";
+          var param = {id:fd.root.replace("node",""),from:fd.root.replace("node","")};
+          $("#MaskingGraph").show();
+          $("#leftSideBarGraph").html("");
+          // $("#static-page .title").html("&nbsp;");
+          $.get(url,param,
+            function(data,status,xhr){
+              console.log(data);
+              var str = '<p><a href="pengarang?id='+data.author.ID+'">Detail Informasi Penulis</a></p><p>Daftar Publikasi</p><ul>';
+              $.each(data.documents,function(index,item){
+                str = str+"<li><a href='dokumen?id="+item.ID+"'>"+item.judul.trunc(80,true)+" ("+item.tahun+")</a></li>";
+              });
+              str = str+'</ul>';
+              console.log(data.author);
+              $("#leftSideBarGraph").html(str);
+              $("#MaskingGraph").hide();
+            }
+          );          
+        }else{
+          var url = "authorsgraph/docs";
+          var param = {id:fd.root.replace("node",""),from:node.nodeFrom.id.replace("node",""),to:node.nodeTo.id.replace("node","")};
+          $("#MaskingGraph").show();
+          $("#leftSideBarGraph").html("");
+          // $("#static-page .title").html("&nbsp;");
+          $.get(url,param,
+            function(data,status,xhr){
+              console.log(data);
+              var str = [
+                          '<p><a href="pengarang?id='+data.author.ID+'">Detail Informasi Penulis</a>',
+                          '</p><p>Daftar Publikasi  Bersama dari '+node.nodeFrom.name+" dengan "+node.nodeTo.name+'</p><ul>'
+                        ].join("");
+              $.each(data.documents,function(index,item){
+                str = str+"<li><a href='dokumen?id="+item.ID+"'>"+item.judul.trunc(80,true)+" ("+item.tahun+")</a></li>";
+              });
+              str = str+'</ul>';
+              $("#leftSideBarGraph").html(str);
+              $("#MaskingGraph").hide();
+            }
+          );          
+        }
+        // Build the right column relations list.  
+        // This is done by traversing the clicked node connections.  
+        // var html = "<h4>" + node.name + "</h4><b> connections:</b><ul><li>",  
+        //     list = [];  
+      }  
+    },  
+    //Number of iterations for the FD algorithm  
+    iterations: 200,  
+    //Edge length  
+    levelDistance: 130,  
+    // Add text to the labels. This method is only triggered  
+    // on label creation and only for DOM labels (not native canvas ones).  
+    onCreateLabel: function(domElement, node){  
+      domElement.innerHTML = node.name;  
+      var style = domElement.style;  
+      style.fontSize = "0.8em";  
+      style.color = "#ccc";  
+    },  
+    // Change node styles when DOM labels are placed  
+    // or moved.  
+    onPlaceLabel: function(domElement, node){  
+      var style = domElement.style;  
+      var left = parseInt(style.left);  
+      var top = parseInt(style.top);  
+      var w = domElement.offsetWidth;  
+      style.left = (left - w / 2) + 'px';  
+      style.top = (top + 10) + 'px';  
+      style.display = '';  
+    }  
+  });  
+  // load JSON data.
+  fd.loadJSON(json);  
+  // compute positions incrementally and animate.  
+  // fd.root=root;
+  fd.computeIncremental({  
+    iter: 40,  
+    property: 'end',  
+    onStep: function(perc){
+      console.log(perc + '% loaded...');  
+    },  
+    onComplete: function(){ 
+      fd.animate({  
+        modes: ['linear'],  
+        duration: 500,  
+        onComplete:function(){
+          $("#MaskingGraph").hide();
+        }
+      });
+      // fd.animate({
+      //   transition: $jit.Trans.Expo.easeInOut,  
+      //   duration: 2500,
+      //   onComplete:function(){
+      //     $("#MaskingGraph").hide();
+      //   }
+      // });
+      // fd.refresh();
+      // $("#MaskingGraph").hide();
+      // fd.canvas.scale(1.3,1.3);
+    }  
+  });
+  {/literal}
+</script>
+{include file="footer.phtml"}

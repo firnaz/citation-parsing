@@ -1,0 +1,35 @@
+{include file="header.phtml"}
+<div id="wrap">
+  <div class="row-fluid header_bar">
+    <div class="container some_padding">
+      <div class="header" id="header">
+        <a id="header_logo" href="{$_URL}" alt="{$_TITLE}"><h4>{$_TITLE}</h4></a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="search_container">
+	<div class="search_box">
+<!--[if lte IE 8]>
+<style>
+#search_input, #input_underlay, #search_hint {
+line-height:66px;
+}
+</style>
+<![endif]-->
+		<div class="home_search_wrapper">
+			<div class="home_search">
+				<div class="home_search_tabs">
+					<h3>Pencarian Dokumen</h3>
+					<div class="clear"></div>
+				</div>
+				<form class="home_search_inner" id="search_form">
+					<input id="search_input" class="search_input" type="text" placeholder="kata pencarian">
+					<a id="search_submit" href="#" ></a>
+				</form>
+    			<div class="search_example_short">Contoh: Temu Kembali Informasi, Sistem Pakar</div>
+			</div><!-- End search_inner -->
+		</div>
+	</div>
+</div>
+{include file="footer.phtml"}

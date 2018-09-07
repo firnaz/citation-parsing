@@ -1,0 +1,80 @@
+{include file="header.phtml"}
+<div id="content">
+  <div class="row-fluid header_bar">
+    <div class="container some_padding">
+      <div class="header" id="header">
+        <a id="header_logo" href="{$_URL}" alt="{$_TITLE}"><h4>{$_TITLE}</h4></a>
+        <div class="header_search_tabs">
+          <div class="clear"></div>
+        </div>
+        <div class="header_search ac_header">
+          <form class="header_search_inner" id="search_form">
+            <a href="#" id="header_search_submit"><span data-icon="w" aria-hidden="true" class="search_icon"></span></a>
+            <div class="header_search_input_wrapper">
+              <input type="text" placeholder="Kata pencarian" value="{$page.query}" id="search_input">
+              <input type="hidden" id="searchFlagInput">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="dokumen">
+    <div class="info">
+      <div class="header-wrapper">
+        <div class="title">{$page.doc.judul}</div>
+        <div class="author">{$page.doc.authors}</div>
+      </div>
+      <div class="detail">
+        <table class="publisher-year">
+          <tr>
+            <td>Penerbit</td>
+            <td>{$page.doc.penerbit}</td>
+          </tr>
+          <tr>
+            <td>Tahun</td>
+            <td>{$page.doc.tahun}</td>
+          </tr>
+        </table>
+        <table class="others">
+          {foreach from=$page.doc.detail key=key item=detail}
+            {if $key!="ID" && $key!="PembimbingID"}
+              {if $key=="url"}
+                <tr>
+                  <td>{$key|replace:'_':' '|upper}</td>
+                  <td><a href="{$detail}" target="_blank">{$detail}</a></td>
+                </tr>
+              {else}
+                <tr>
+                  <td>{$key|replace:'_':' '|capitalize}</td>
+                  <td>{$detail}</td>
+                </tr>
+              {/if}
+            {/if}
+          {/foreach}
+        </table>
+      </div>
+    </div>
+    {if $page.doc.DaftarPustaka}
+      <div class="list-info">
+        <h4>Daftar Pustaka</h4>
+        <ol>
+          {foreach from=$page.doc.DaftarPustaka item=item}
+            <li><a href="dokumen?id={$item.DokumenID}">{$item.entri_daftar_pustaka}</a></li>
+          {/foreach}
+        </ol>
+      </div>
+    {/if}
+    {if $page.doc.Dirujuk}
+      <div class="list-info">
+        <h4><a href="#dirujuk">Dirujuk oleh:</a></h4>
+        <ol>
+          {foreach from=$page.doc.Dirujuk item=item}
+            <li><a href="dokumen?id={$item.ID}">{$item.judul}{if $item.tahun} ({$item.tahun}){/if}</a></li>
+          {/foreach}
+        </ol>
+      </div>
+    {/if}
+  </div>
+</div>
+{include file="footer.phtml"}

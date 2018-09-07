@@ -1,0 +1,55 @@
+{include file="header.phtml"}
+<div id="content">
+  <div class="row-fluid header_bar">
+    <div class="container some_padding">
+      <div class="header" id="header">
+        <a id="header_logo" href="{$_URL}" alt="{$_TITLE}"><h4>{$_TITLE}</h4></a>
+        <div class="header_search_tabs">
+          <div class="clear"></div>
+        </div>
+        <div class="header_search ac_header">
+          <form class="header_search_inner" id="search_form">
+            <a href="#" id="header_search_submit"><span data-icon="w" aria-hidden="true" class="search_icon"></span></a>
+            <div class="header_search_input_wrapper">
+              <input type="text" placeholder="Kata pencarian" value="{$page.query}" id="search_input">
+              <input type="hidden" id="searchFlagInput">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="pengarang">
+    <div class="info">
+      <div class="author-name">Daftar Publikasi dari {$page.author.NamaPengarang} <span class="icon"><a href="authorsgraph?id={$page.author.ID}" ><img src="assets/images/connections-icon.png" alt="Grafik Penulisan Bersama" title="Grafik Penulisan Bersama"/></a></span> <span class="icon"><a href="citesgraph?id={$page.author.ID}"><img src="assets/images/citation-graph-icon.png" alt="Grafik Sitasi" title="Grafik Sitasi"/></a></span></div>
+      {if $page.author.dokumen}
+        <div class="list-info">
+          <h4>Publikasi</h4>
+          <ol>
+              {foreach from=$page.author.dokumen item=item}
+              <li>
+                <div class="judul"><a href="dokumen?id={$item.ID}">{$item.judul}</a></div>
+                <div class="author">{$item.authors}</div>
+                <table class="detail">
+                    <tr>
+                      <td><strong>Tahun</strong></td>
+                      <td>{if $item.tahun}{$item.tahun}{else}-{/if}</td>
+                      <td><strong>Penerbit</strong></td>
+                      <td>{if $item.penerbit}{$item.penerbit}{else}-{/if}</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Jenis Publikasi</strong></td>
+                      <td>{if $item.tipe}{$item.tipe|capitalize}{else}-{/if}</td>
+                      <td><strong>Dirujuk oleh</strong></td>
+                      <td>{if $item.cited}<a href="dokumen?id={$item.ID}#dirujuk">{$item.cited} Dokumen</a>{else}-{/if}</td>
+                    </tr>
+                </table>
+              </li>
+              {/foreach}
+          </ol>
+        </div>
+      {/if}
+    </div>
+  </div>
+</div>
+{include file="footer.phtml"}

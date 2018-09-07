@@ -1,0 +1,60 @@
+{include file="header.phtml"}
+<div id="content">
+  <div class="row-fluid header_bar">
+    <div class="container some_padding">
+      <div class="header" id="header">
+        <a id="header_logo" href="{$_URL}" alt="{$_TITLE}"><h4>{$_TITLE}</h4></a>
+        <div class="header_search_tabs">
+          <div class="clear"></div>
+        </div>
+        <div class="header_search ac_header">
+          <form class="header_search_inner" id="search_form">
+            <a href="#" id="header_search_submit"><span data-icon="w" aria-hidden="true" class="search_icon"></span></a>
+            <div class="header_search_input_wrapper">
+              <input type="text" placeholder="Kata pencarian" value="{$page.query}" id="search_input">
+              <input type="hidden" id="searchFlagInput">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {if $page.result}
+  <div id="search-result">
+    <div class="search-result-top">Sebanyak {$page.total_found} dokumen ditemukan sesuai pada pencarian kata "{$page.query}" dalam waktu {$page.search_time} detik.</div>
+    <ul class="search-result-list">
+      {foreach from=$page.result item=item}
+      <li>
+        <div class="relevance">Bobot: <span>{$item.spresult.bobot}</span>%</div>
+        <div class="cited">{if $item.cited}Dirujuk: {$item.cited}{/if}</div>
+        <div class="title"><a href="dokumen?id={$item.ID}">{$item.judul}</a></div>
+        <div class="author">{$item.authors}</div>
+        <div class="summary">{$item.teks}</div>
+      </li>
+      {/foreach}
+    </ul>
+    <div class="search-result-paging">
+      {if $page.current_page > 1}
+      <span class="prev"><a href="?page={$page.current_page-1}&q={$smarty.get.q|urlencode}">&laquo;</a></span> 
+      {/if}
+      <span class="page">
+        {for $i=1 to $page.total_page}
+          {if $i==$page.current_page}
+            {$i}
+          {else}
+            <a href="?page={$i}&q={$smarty.get.q|urlencode}">{$i}</a>
+          {/if}
+        {/for}
+      </span> 
+      {if $page.current_page < $page.total_page}
+      <span class="next"><a href="?page={$page.current_page+1}&q={$smarty.get.q|urlencode}">&raquo;</a></span>
+      {/if}
+    </div>
+  </div>
+  {else}
+  <div id="search-result">
+    <div>Tidak ditemukan dokumen yang sesuai pada pencarian kata "{$page.query}". </div>
+  </div>  
+  {/if}
+</div>
+{include file="footer.phtml"}
